@@ -1,4 +1,4 @@
-package com.cashfree.flutter_cashfree_pg_sdk_example;
+package com.cashfree.pg.demoapp;
 
 import io.flutter.embedding.android.FlutterActivity;
 

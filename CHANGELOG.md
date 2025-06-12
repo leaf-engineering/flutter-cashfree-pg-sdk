@@ -1,3 +1,7 @@
+## 2.2.9+47
+
+* Android SDK compatibility with API level 35
+
 ## 2.2.8+46
 
 * Introduced iOS Subscription Checkout flow

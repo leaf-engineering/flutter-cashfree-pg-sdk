@@ -8,7 +8,7 @@ buildscript {
     }
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:7.1.3'
+        classpath 'com.android.tools.build:gradle:8.8.2'
     }
 }
 
@@ -24,7 +24,7 @@ apply plugin: 'com.android.library'
 android {
 
     namespace "com.cashfree.flutter_cashfree_pg_sdk"
-    compileSdkVersion 34
+    compileSdk 35
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
@@ -43,5 +43,5 @@ dependencies {
     implementation 'androidx.constraintlayout:constraintlayout:2.1.3'
     implementation 'androidx.gridlayout:gridlayout:1.0.0'
 
-    api 'com.cashfree.pg:api:2.2.4'
+    api 'com.cashfree.pg:api:2.2.8'
 }

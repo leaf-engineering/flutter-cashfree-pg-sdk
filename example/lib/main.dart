@@ -36,10 +36,11 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-
   var cfPaymentGatewayService = CFPaymentGatewayService();
   var clientIDController = TextEditingController();
   var clientSecretController = TextEditingController();
+
+  var TAG = "CashfreeFlutterSampleApp";
 
   CFCardWidget? cfCardWidget;
 
@@ -47,10 +48,12 @@ class _MyAppState extends State<MyApp> {
   void initState() {
     super.initState();
     cfPaymentGatewayService.setCallback(verifyPayment, onError);
-    final GlobalKey<CFCardWidgetState> myWidgetKey = GlobalKey<CFCardWidgetState>();
+    final GlobalKey<CFCardWidgetState> myWidgetKey =
+        GlobalKey<CFCardWidgetState>();
     try {
       var session = createSession();
-      cfCardWidget = CFCardWidget(key: myWidgetKey,
+      cfCardWidget = CFCardWidget(
+        key: myWidgetKey,
         textStyle: null,
         inputDecoration: InputDecoration(
           hintText: 'XXXX XXXX XXXX XXXX',
@@ -75,29 +78,22 @@ class _MyAppState extends State<MyApp> {
     }
 
     CFUPIUtils().getUPIApps().then((value) {
-      for(var i = 0; i < (value?.length ?? 0); i++) {
-        print("UPI Icon base64Icon ==> ${value?[i]["base64Icon"]}");
-        print("UPI Package Identifier ==>${value?[i]["id"]}");
-        print("UPI App Name ==> ${value?[i]["displayName"]}");
+      for (var i = 0; i < (value?.length ?? 0); i++) {
         var a = value?[i]["id"] as String ?? "";
-        if(a.contains("cashfree")) {
+        if (a.contains("cashfree")) {
           upiPackageName = value?[i]["id"];
-          print("UPI PackageName ==> $upiPackageName");
+          print("$TAG-------UPI PackageName ==> $upiPackageName");
         }
       }
     });
   }
-
-  // void clearCookies() {
-  //   cookieManager.clearCookies();
-  // }
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       home: Scaffold(
         appBar: AppBar(
-          title: const Text('Plugin example app'),
+          title: const Text('Cashfree Flutter Sample app'),
         ),
         body: Center(
           child: Column(
@@ -110,7 +106,8 @@ class _MyAppState extends State<MyApp> {
               Container(
                 margin: const EdgeInsets.symmetric(horizontal: 20.0),
                 child: TextField(
-                  controller: clientIDController,
+                  controller: clientIDController
+                    ..text = "TEST430329ae80e0f32e41a393d78b923034",
                   decoration: InputDecoration(
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(5.0),
@@ -123,7 +120,8 @@ class _MyAppState extends State<MyApp> {
               Container(
                   margin: const EdgeInsets.symmetric(horizontal: 20.0),
                   child: TextField(
-                    controller: clientSecretController,
+                    controller: clientSecretController
+                      ..text = "TESTaf195616268bd6202eeb3bf8dc458956e7192a85",
                     decoration: InputDecoration(
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(5.0),
@@ -144,9 +142,14 @@ class _MyAppState extends State<MyApp> {
                   child: const Text("Subscription Web Checkout Flow")),
               cfCardWidget!,
               TextButton(onPressed: cardPay, child: const Text("Card Pay")),
-              TextButton(onPressed: upiCollectPay, child: const Text("UPI Collect Pay")),
-              TextButton(onPressed: upiIntentPay, child: const Text("UPI Intent Pay")),
-              TextButton(onPressed: netbankingPay, child: const Text("Netbanking Pay")),
+              TextButton(
+                  onPressed: upiCollectPay,
+                  child: const Text("UPI Collect Pay")),
+              TextButton(
+                  onPressed: upiIntentPay, child: const Text("UPI Intent Pay")),
+              TextButton(
+                  onPressed: netbankingPay,
+                  child: const Text("Netbanking Pay")),
             ],
           ),
         ),
@@ -157,23 +160,27 @@ class _MyAppState extends State<MyApp> {
   // "var cardNumber = document.createElement('div');\ncardNumber.id = \"cardNumber\";\nvar cardCvv = document.createElement('div');\ncardCvv.id = \"cardCvv\";\nvar cardExpiry = document.createElement('div');\ncardExpiry.id = \"cardExpiry\";\nvar cardHolder = document.createElement('div');\ncardHolder.id = \"cardHolder\";\nvar payButton = document.createElement('button');\npayButton.id = \"payButton\";\n\n\nconst cashfree = await load({ \n      mode: \"sandbox\", //or production\n    });\n\n    const cardComponent = cashfree.create(\"cardNumber\", {});\n    cardComponent.mount(\"#cardNumber\");\n\n    const cardCvv = cashfree.create(\"cardCvv\", {});\n    cardCvv.mount(\"#cardCvv\");\n\n    const cardExpiry = cashfree.create(\"cardExpiry\", {});\n    cardExpiry.mount(\"#cardExpiry\");\n\n    const cardHolder = cashfree.create(\"cardHolder\", {});\n    cardHolder.mount(\"#cardHolder\");\n\n    const showError = function(e){\n      alert(e.message)\n    }\n\n    document.querySelector(\"#payBtn\").addEventListener(\"click\", async () => {\n      cashfree.pay({\n        paymentMethod: cardComponent,\n        paymentSessionId: \"yourPaymentSession\",\n        returnUrl: \"https://merchantsite.com/return?order_id={order_id}\",\n      }).then(function (data) {\n        if (data != null && data.error) {\n          return showError(data.error)\n        }\n      });\n    })"
 
   void verifyPayment(String orderId) {
-    print("Verify Payment");
+    print("$TAG --------Verify Payment ===> $orderId" );
+    showToast("Verify Order ID ==> $orderId");
   }
 
   void onError(CFErrorResponse errorResponse, String orderId) {
-    print("Error while making payment");
-    print(errorResponse.getMessage());
+    print("$TAG --------Error while making payment ===> $orderId");
+    print("$TAG -------- ${errorResponse.getMessage()}");
+    showToast("${errorResponse.getMessage()}");
   }
 
   void cardListener(CFCardListener cardListener) {
-    print("Card Listener triggered");
+    print("$TAG --------Card Listener triggered");
     print(cardListener.getNumberOfCharacters());
     print(cardListener.getType());
     print(cardListener.getMetaData());
   }
 
-  String orderId = "devstudio_7318157564499795298";
-  String paymentSessionId = "session_GPXQ9UXdmPZPYNaENynIezYeoEK1kZkmMnR8fDPtYH2mJgS_dqIENfGw9k3rRNjpXW8PfgpdTDXIr6-q6TSTxCL9oE0DRzVrnaySGR5Q-h8NxEiwpg6DpdcOYIMpayment";
+  String orderId = "devstudio_7353735872386483514";
+  String paymentSessionId =
+      "session_Box0WGk2C4RgEItAmk0mOhYAikmLzkdJ3k8rjQ74dy4AIoFu-WHDmLZ8BxJOaK3KC3GmnMX31KJ98Ei_y51EEG-w7CKJxOKB9Cm6-M58CQIFGliIZnSAHWEHtX8payment";
+
   void receivedEvent(String event_name, Map<dynamic, dynamic> meta_data) {
     print(event_name);
     print(meta_data);
@@ -185,9 +192,15 @@ class _MyAppState extends State<MyApp> {
   upiIntentCheckout() async {
     try {
       cfPaymentGatewayService.setCallback(verifyPayment, onError);
-      var session = createSession();
+      var session = await createPaymentSession();
+      if (session == null) {
+        print("$TAG -------- Order creation failed");
+        showToast("Order Session creation failed");
+        return;
+      }
       var upi = CFUPIBuilder().setChannel(CFUPIChannel.INTENT_WITH_UI).build();
-      var upiPayment = CFUPIPaymentBuilder().setSession(session!).setUPI(upi).build();
+      var upiPayment =
+          CFUPIPaymentBuilder().setSession(session!).setUPI(upi).build();
       cfPaymentGatewayService.doPayment(upiPayment);
     } on CFException catch (e) {
       print(e.message);
@@ -197,9 +210,18 @@ class _MyAppState extends State<MyApp> {
   upiCollectPay() async {
     try {
       cfPaymentGatewayService.setCallback(verifyPayment, onError);
-      var session = createSession();
-      var upi = CFUPIBuilder().setChannel(CFUPIChannel.COLLECT).setUPIID("suhasg6@ybl").build();
-      var upiPayment = CFUPIPaymentBuilder().setSession(session!).setUPI(upi).build();
+      var session = await createPaymentSession();
+      if (session == null) {
+        print("$TAG -------- Order creation failed");
+        showToast("Order Session creation failed");
+        return;
+      }
+      var upi = CFUPIBuilder()
+          .setChannel(CFUPIChannel.COLLECT)
+          .setUPIID("testfailure@gocash")
+          .build();
+      var upiPayment =
+          CFUPIPaymentBuilder().setSession(session!).setUPI(upi).build();
       cfPaymentGatewayService.doPayment(upiPayment);
     } on CFException catch (e) {
       print(e.message);
@@ -209,9 +231,18 @@ class _MyAppState extends State<MyApp> {
   netbankingPay() async {
     try {
       cfPaymentGatewayService.setCallback(verifyPayment, onError);
-      var session = createSession();
-      var netbanking = CFNetbankingBuilder().setChannel("link").setBankCode(3003).build();
-      var netbankingPayment = CFNetbankingPaymentBuilder().setSession(session!).setNetbanking(netbanking).build();
+      var session = await createPaymentSession();
+      if (session == null) {
+        print("$TAG -------- Order creation failed");
+        showToast("Order Session creation failed");
+        return;
+      }
+      var netbanking =
+          CFNetbankingBuilder().setChannel("link").setBankCode(3003).build();
+      var netbankingPayment = CFNetbankingPaymentBuilder()
+          .setSession(session!)
+          .setNetbanking(netbanking)
+          .build();
       cfPaymentGatewayService.doPayment(netbankingPayment);
     } on CFException catch (e) {
       print(e.message);
@@ -221,9 +252,18 @@ class _MyAppState extends State<MyApp> {
   upiIntentPay() async {
     try {
       cfPaymentGatewayService.setCallback(verifyPayment, onError);
-      var session = createSession();
-      var upi = CFUPIBuilder().setChannel(CFUPIChannel.INTENT).setUPIID(upiPackageName).build();
-      var upiPayment = CFUPIPaymentBuilder().setSession(session!).setUPI(upi).build();
+      var session = await createPaymentSession();
+      if (session == null) {
+        print("$TAG -------- Order creation failed");
+        showToast("Order Session creation failed");
+        return;
+      }
+      var upi = CFUPIBuilder()
+          .setChannel(CFUPIChannel.INTENT)
+          .setUPIID(upiPackageName)
+          .build();
+      var upiPayment =
+          CFUPIPaymentBuilder().setSession(session!).setUPI(upi).build();
       cfPaymentGatewayService.doPayment(upiPayment);
     } on CFException catch (e) {
       print(e.message);
@@ -233,9 +273,24 @@ class _MyAppState extends State<MyApp> {
   cardPay() async {
     try {
       cfPaymentGatewayService.setCallback(verifyPayment, onError);
-      var session = createSession();
-      var card = CFCardBuilder().setCardWidget(cfCardWidget!).setCardExpiryMonth("08").setCardExpiryYear("88").setCardHolderName("Roronoa Zoro").setCardCVV("888").build();
-      var cardPayment = CFCardPaymentBuilder().setSession(session!).setCard(card).savePaymentMethod(true).build();
+      var session = await createPaymentSession();
+      if (session == null) {
+        print("$TAG -------- Order creation failed");
+        showToast("Order Session creation failed");
+        return;
+      }
+      var card = CFCardBuilder()
+          .setCardWidget(cfCardWidget!)
+          .setCardExpiryMonth("08")
+          .setCardExpiryYear("88")
+          .setCardHolderName("Roronoa Zoro")
+          .setCardCVV("888")
+          .build();
+      var cardPayment = CFCardPaymentBuilder()
+          .setSession(session!)
+          .setCard(card)
+          .savePaymentMethod(true)
+          .build();
       cfPaymentGatewayService.doPayment(cardPayment);
     } on CFException catch (e) {
       print(e.message);
@@ -244,14 +299,28 @@ class _MyAppState extends State<MyApp> {
 
   pay() async {
     try {
-      var session = createSession();
+      var session = await createPaymentSession();
+      if (session == null) {
+        print("$TAG -------- Order creation failed");
+        showToast("Order Session creation failed");
+        return;
+      }
       List<CFPaymentModes> components = <CFPaymentModes>[];
       components.add(CFPaymentModes.UPI);
-      var paymentComponent = CFPaymentComponentBuilder().setComponents(components).build();
+      var paymentComponent =
+          CFPaymentComponentBuilder().setComponents(components).build();
 
-      var theme = CFThemeBuilder().setNavigationBarBackgroundColorColor("#FF0000").setPrimaryFont("Menlo").setSecondaryFont("Futura").build();
+      var theme = CFThemeBuilder()
+          .setNavigationBarBackgroundColorColor("#FF0000")
+          .setPrimaryFont("Menlo")
+          .setSecondaryFont("Futura")
+          .build();
 
-      var cfDropCheckoutPayment = CFDropCheckoutPaymentBuilder().setSession(session!).setPaymentComponent(paymentComponent).setTheme(theme).build();
+      var cfDropCheckoutPayment = CFDropCheckoutPaymentBuilder()
+          .setSession(session!)
+          .setPaymentComponent(paymentComponent)
+          .setTheme(theme)
+          .build();
 
       cfPaymentGatewayService.doPayment(cfDropCheckoutPayment);
     } on CFException catch (e) {
@@ -263,7 +332,11 @@ class _MyAppState extends State<MyApp> {
     try {
       String oid = orderId;
       String spi = paymentSessionId;
-      var session = CFSessionBuilder().setEnvironment(environment).setOrderId(oid).setPaymentSessionId(spi).build();
+      var session = CFSessionBuilder()
+          .setEnvironment(environment)
+          .setOrderId(oid)
+          .setPaymentSessionId(spi)
+          .build();
       return session;
     } on CFException catch (e) {
       print(e.message);
@@ -284,9 +357,14 @@ class _MyAppState extends State<MyApp> {
 
   webCheckout() async {
     try {
-      var session = createSession();
-      var theme = CFThemeBuilder().setNavigationBarBackgroundColorColor("#ffffff").setNavigationBarTextColor("#ffffff").build();
-      var cfWebCheckout = CFWebCheckoutPaymentBuilder().setSession(session!).setTheme(theme).build();
+      var session = await createPaymentSession();
+      if (session == null) {
+        print("$TAG -------- Order creation failed");
+        showToast("Order Session creation failed");
+        return;
+      }
+      var cfWebCheckout =
+          CFWebCheckoutPaymentBuilder().setSession(session!).build();
       cfPaymentGatewayService.doPayment(cfWebCheckout);
     } on CFException catch (e) {
       print(e.message);
@@ -299,7 +377,7 @@ class _MyAppState extends State<MyApp> {
           onSubscriptionVerify, onSubscriptionFailure);
       var session = await createSubscriptionSession();
       if (session == null) {
-        print("Subscription Session creation failed");
+        print("$TAG -------- Subscription Session creation failed");
         showToast("Subscription Session creation failed");
         return;
       }
@@ -366,27 +444,77 @@ class _MyAppState extends State<MyApp> {
         return subsriptionSession;
       } else {
         print(
-            "Failed to create subscription: ${response.statusCode} ${response.body}");
+            "$TAG -------- Failed to create subscription: ${response.statusCode} ${response.body}");
       }
     } catch (e) {
-      print("Exception during subscription creation: $e");
+      print("$TAG -------- Exception during subscription creation: $e");
+    }
+
+    return null;
+  }
+
+  Future<CFSession?> createPaymentSession() async {
+    final url = Uri.parse('https://sandbox.cashfree.com/pg/orders');
+
+    final headers = {
+      'accept': 'application/json',
+      'content-type': 'application/json',
+      'x-api-version': '2025-01-01',
+      'x-client-id': clientIDController.text,
+      'x-client-secret': clientSecretController.text,
+    };
+
+    final body = jsonEncode({
+      "order_amount": 1.00,
+      "order_currency": "INR",
+      "customer_details": {
+        "customer_id": "rand_order_id",
+        "customer_name": "Cashfree Sample",
+        "customer_email": "test@cashfree.digital",
+        "customer_phone": "8474090552"
+      },
+      "order_meta": {
+        "return_url":
+            "https://www.cashfree.com/devstudio/preview/pg/web/checkout?order_id={order_id}"
+      },
+    });
+
+    try {
+      final response = await http.post(url, headers: headers, body: body);
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        final data = jsonDecode(response.body);
+        final paymentSessionId = data['payment_session_id'];
+        final orderId = data['order_id'];
+        var cfSession = CFSessionBuilder()
+            .setEnvironment(environment)
+            .setOrderId(orderId)
+            .setPaymentSessionId(paymentSessionId)
+            .build();
+        return cfSession;
+      } else {
+        print(
+            "$TAG -------- Failed to create order: ${response.statusCode} ${response.body}");
+      }
+    } catch (e) {
+      print("$TAG -------- Exception during order creation: $e");
     }
 
     return null;
   }
 
   void onSubscriptionVerify(String subscriptionId) {
-    print("Verify Subscription ===> $subscriptionId");
+    print("$TAG -------- Verify Subscription ===> $subscriptionId");
     showToast("Verify Subs ID ==> $subscriptionId");
   }
 
   void onSubscriptionFailure(CFErrorResponse errorResponse, String data) {
-    print("Failure in subscription flow");
+    print("$TAG -------- Failure in subscription flow");
     print(errorResponse.getMessage());
     showToast(errorResponse.getMessage());
   }
 
-  void showToast( String? message){
+  void showToast(String? message) {
     Fluttertoast.showToast(
         msg: "$message",
         toastLength: Toast.LENGTH_SHORT,
@@ -394,7 +522,6 @@ class _MyAppState extends State<MyApp> {
         timeInSecForIosWeb: 1,
         backgroundColor: Colors.red,
         textColor: Colors.white,
-        fontSize: 16.0
-    );
+        fontSize: 16.0);
   }
 }
