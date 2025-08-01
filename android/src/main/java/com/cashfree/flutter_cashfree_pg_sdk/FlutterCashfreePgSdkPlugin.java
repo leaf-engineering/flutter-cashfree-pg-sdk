@@ -1,6 +1,9 @@
 package com.cashfree.flutter_cashfree_pg_sdk;
 
 import android.app.Activity;
+import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageManager;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 
@@ -8,17 +11,21 @@ import androidx.annotation.NonNull;
 
 import com.cashfree.pg.api.CFPaymentGatewayService;
 import com.cashfree.pg.core.api.CFSession;
+import com.cashfree.pg.core.api.CFSubscriptionSession;
 import com.cashfree.pg.core.api.CFTheme;
 import com.cashfree.pg.core.api.base.CFPayment;
 import com.cashfree.pg.core.api.callback.CFCheckoutResponseCallback;
+import com.cashfree.pg.core.api.callback.CFSubscriptionResponseCallback;
 import com.cashfree.pg.core.api.card.CFCard;
 import com.cashfree.pg.core.api.card.CFCardPayment;
 import com.cashfree.pg.core.api.exception.CFException;
 import com.cashfree.pg.core.api.netbanking.CFNetBanking;
 import com.cashfree.pg.core.api.netbanking.CFNetBankingPayment;
+import com.cashfree.pg.core.api.subscription.CFSubscriptionPayment;
 import com.cashfree.pg.core.api.upi.CFUPI;
 import com.cashfree.pg.core.api.upi.CFUPIPayment;
 import com.cashfree.pg.core.api.utils.CFErrorResponse;
+import com.cashfree.pg.core.api.utils.CFSubscriptionResponse;
 import com.cashfree.pg.core.api.utils.CFUPIApp;
 import com.cashfree.pg.core.api.utils.CFUPIUtil;
 import com.cashfree.pg.core.api.webcheckout.CFWebCheckoutPayment;
@@ -75,7 +82,7 @@ import com.cashfree.pg.ui.api.upi.intent.CFUPIIntentCheckoutPayment;
 */
 
 /** FlutterCashfreePgSdkPlugin */
-public class FlutterCashfreePgSdkPlugin implements FlutterPlugin, MethodCallHandler, ActivityAware, CFCheckoutResponseCallback {
+public class FlutterCashfreePgSdkPlugin implements FlutterPlugin, MethodCallHandler, ActivityAware, CFCheckoutResponseCallback, CFSubscriptionResponseCallback {
   /// The MethodChannel that will the communication between Flutter and native Android
   ///
   /// This local reference serves to register the plugin with the Flutter Engine and unregister it
@@ -86,6 +93,7 @@ public class FlutterCashfreePgSdkPlugin implements FlutterPlugin, MethodCallHand
 
   private Activity activity;
   private Handler uiThreadHandler = new Handler(Looper.getMainLooper());
+  private final String CF_FL_SDK_VERSION = "2.2.9";
 
   void FlutterCashfreePgSdkPlugin() {}
 
@@ -114,7 +122,7 @@ public class FlutterCashfreePgSdkPlugin implements FlutterPlugin, MethodCallHand
                 .setCfNetBanking(cfNetBanking)
                 .build();
 
-        CFPayment.CFSDKFramework.FLUTTER.withVersion("2.2.3");
+        CFPayment.CFSDKFramework.FLUTTER.withVersion(CF_FL_SDK_VERSION);
         cfNetBankingPayment.setCfsdkFramework(CFPayment.CFSDKFramework.FLUTTER);
         cfNetBankingPayment.setCfSDKFlavour(CFPayment.CFSDKFlavour.ELEMENT);
         CFPaymentGatewayService gatewayService = CFPaymentGatewayService.getInstance();
@@ -137,7 +145,7 @@ public class FlutterCashfreePgSdkPlugin implements FlutterPlugin, MethodCallHand
                 .setCfUPI(cfupi)
                 .build();
 
-        CFPayment.CFSDKFramework.FLUTTER.withVersion("2.2.3");
+        CFPayment.CFSDKFramework.FLUTTER.withVersion(CF_FL_SDK_VERSION);
         cfupiPayment.setCfsdkFramework(CFPayment.CFSDKFramework.FLUTTER);
         cfupiPayment.setCfSDKFlavour(CFPayment.CFSDKFlavour.ELEMENT);
         CFPaymentGatewayService gatewayService = CFPaymentGatewayService.getInstance();
@@ -159,7 +167,7 @@ public class FlutterCashfreePgSdkPlugin implements FlutterPlugin, MethodCallHand
                 .setSession(cfSession)
                 .setCfUPIIntentCheckout(cfupiIntentCheckout)
                 .build();
-        CFPayment.CFSDKFramework.FLUTTER.withVersion("2.2.3");
+        CFPayment.CFSDKFramework.FLUTTER.withVersion(CF_FL_SDK_VERSION);
         cfupiIntentCheckoutPayment.setCfsdkFramework(CFPayment.CFSDKFramework.FLUTTER);
         cfupiIntentCheckoutPayment.setCfSDKFlavour(CFPayment.CFSDKFlavour.INTENT);
         CFPaymentGatewayService gatewayService = CFPaymentGatewayService.getInstance();
@@ -199,7 +207,7 @@ public class FlutterCashfreePgSdkPlugin implements FlutterPlugin, MethodCallHand
                 .setSaveCardDetail(savePaymentMethod)
                 .build();
         cfCardPayment.setCfSDKFlow(CFPayment.CFSDKFlow.WITH_CASHFREE_FULLSCREEN_LOADER);
-        CFPayment.CFSDKFramework.FLUTTER.withVersion("2.2.3");
+        CFPayment.CFSDKFramework.FLUTTER.withVersion(CF_FL_SDK_VERSION);
         cfCardPayment.setCfsdkFramework(CFPayment.CFSDKFramework.FLUTTER);
         cfCardPayment.setCfSDKFlavour(CFPayment.CFSDKFlavour.ELEMENT);
         CFPaymentGatewayService gatewayService = CFPaymentGatewayService.getInstance();
@@ -225,7 +233,7 @@ public class FlutterCashfreePgSdkPlugin implements FlutterPlugin, MethodCallHand
                 .setCFUIPaymentModes(component)
                 .setCFNativeCheckoutUITheme(cfTheme)
                 .build();
-        CFPayment.CFSDKFramework.FLUTTER.withVersion("2.2.3");
+        CFPayment.CFSDKFramework.FLUTTER.withVersion(CF_FL_SDK_VERSION);
         cfDropCheckoutPayment.setCfsdkFramework(CFPayment.CFSDKFramework.FLUTTER);
         cfDropCheckoutPayment.setCfSDKFlavour(CFPayment.CFSDKFlavour.DROP);
         CFPaymentGatewayService gatewayService = CFPaymentGatewayService.getInstance();
@@ -246,11 +254,32 @@ public class FlutterCashfreePgSdkPlugin implements FlutterPlugin, MethodCallHand
                 .setSession(cfSession)
                 .setCFWebCheckoutUITheme(cfTheme)
                 .build();
-        CFPayment.CFSDKFramework.FLUTTER.withVersion("2.2.3");
+        CFPayment.CFSDKFramework.FLUTTER.withVersion(CF_FL_SDK_VERSION);
         cfWebCheckoutPayment.setCfsdkFramework(CFPayment.CFSDKFramework.FLUTTER);
         cfWebCheckoutPayment.setCfSDKFlavour(CFPayment.CFSDKFlavour.WEB_CHECKOUT);
         CFPaymentGatewayService gatewayService = CFPaymentGatewayService.getInstance();
         gatewayService.doPayment(this.activity, cfWebCheckoutPayment);
+      } catch (CFException e) {
+        handleExceptions(e.getMessage());
+      }
+    } else if (call.method.equals("doSubscriptionPayment")) {
+      Map<String, Object> request = (Map<String, Object>) call.arguments;
+      Map<String, String> session = (Map<String, String>) request.get("session");
+      Map<String, String> theme = (Map<String, String>) request.get("theme");
+      try {
+        // Create Subscription Session
+        CFSubscriptionSession cfSession = createSubscriptionSession(session);
+        CFWebCheckoutTheme cfTheme = createWebCheckoutTheme(theme);
+
+        CFSubscriptionPayment cfSubscriptionPayment = new CFSubscriptionPayment.CFSubscriptionCheckoutBuilder()
+                .setSubscriptionSession(cfSession)
+                .setSubscriptionUITheme(cfTheme)
+                .build();
+        CFPayment.CFSDKFramework.FLUTTER.withVersion(CF_FL_SDK_VERSION);
+        cfSubscriptionPayment.setCfsdkFramework(CFPayment.CFSDKFramework.FLUTTER);
+        cfSubscriptionPayment.setCfSDKFlavour(CFPayment.CFSDKFlavour.SUBSCRIPTION);
+        CFPaymentGatewayService gatewayService = CFPaymentGatewayService.getInstance();
+        gatewayService.doSubscriptionPayment(this.activity, cfSubscriptionPayment);
       } catch (CFException e) {
         handleExceptions(e.getMessage());
       }
@@ -406,6 +435,23 @@ public class FlutterCashfreePgSdkPlugin implements FlutterPlugin, MethodCallHand
     }
   }
 
+  private CFSubscriptionSession createSubscriptionSession(Map<String, String> session) throws CFException {
+    try {
+      String environment = session.get("environment");
+      CFSubscriptionSession.Environment sessionEnvironment = CFSubscriptionSession.Environment.PRODUCTION;
+      if("SANDBOX".equalsIgnoreCase(environment)) {
+        sessionEnvironment = CFSubscriptionSession.Environment.SANDBOX;
+      }
+      return  new CFSubscriptionSession.CFSubscriptionSessionBuilder()
+              .setEnvironment(sessionEnvironment)
+              .setSubscriptionSessionID(session.get("subscription_session_id"))
+              .setSubscriptionId(session.get("subscription_id"))
+              .build();
+    } catch (CFException e) {
+      throw e;
+    }
+  }
+
   @Override
   public void onDetachedFromEngine(@NonNull FlutterPluginBinding binding) {
     channel.setMethodCallHandler(null);
@@ -470,10 +516,53 @@ public class FlutterCashfreePgSdkPlugin implements FlutterPlugin, MethodCallHand
   }
 
   @Override
+  public void onSubscriptionVerify(CFSubscriptionResponse cfSubscriptionResponse) {
+    Map<String, Object> verifyMap = new HashMap<>();
+    verifyMap.put("status", "success");
+    verifyMap.put("data", cfSubscriptionResponse.toMap());
+    triggerSubscriptionResponse(verifyMap);
+  }
+
+  @Override
+  public void onSubscriptionFailure(CFErrorResponse cfErrorResponse) {
+    Map<String, Object> failureMap = new HashMap<>();
+    failureMap.put("status", "failed");
+    failureMap.put("data", cfErrorResponse.toMap());
+    triggerSubscriptionResponse(failureMap);
+  }
+
+  private void triggerSubscriptionResponse(Map<String, Object> data){
+    JSONObject jsonObject = new JSONObject(data);
+    try {
+      if(result != null) {
+        result.success(jsonObject.toString());
+        result = null;
+      } else {
+        finalResponse = jsonObject;
+      }
+    } catch(Exception ignored) {
+    }
+  }
+
+  private boolean isSubscriptionFlowEnable(){
+    try {
+      ApplicationInfo app = this.activity.getPackageManager().getApplicationInfo(this.activity
+              .getPackageName(), PackageManager.GET_META_DATA);
+      Bundle bundle = app.metaData;
+      return bundle.getBoolean("cashfree_subscription_flow_enable", false);
+    }catch (Exception e){
+      return  false;
+    }
+  }
+
+  @Override
   public void onAttachedToActivity(@NonNull ActivityPluginBinding binding) {
     this.activity = binding.getActivity();
     try {
       CFPaymentGatewayService.getInstance().setCheckoutCallback(this);
+      if(isSubscriptionFlowEnable()){
+        CFPaymentGatewayService.getInstance().setSubscriptionCheckoutCallback(this);
+      }
     } catch (CFException e) {
       handleExceptions(e.getMessage());
     }

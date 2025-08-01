@@ -1,3 +1,30 @@
+## 2.2.9+47
+
+* Android SDK compatibility with API level 35
+
+## 2.2.8+46
+
+* Introduced iOS Subscription Checkout flow
+* Upgrade android sdk version 2.2.4
+
+## 2.2.7+45
+
+* Introduced Android Subscription Checkout flow
+
+## 2.2.6+44
+
+* Upgrade android sdk version 2.2.2
+* iOS version updated to 2.2.1
+
+## 2.2.5+43
+
+* Added Payfast in iOS and Android.
+
+## 2.2.4+42
+
+* Upgrade android sdk version
+* iOS version updated to 2.1.0
+
 ## 2.2.3+41
 
 * Deprecated Drop Checkout Payment.

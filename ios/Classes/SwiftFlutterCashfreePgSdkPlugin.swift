@@ -39,6 +39,7 @@ public class SwiftFlutterCashfreePgSdkPlugin: NSObject, FlutterPlugin, CFRespons
     
     private var flutterResult: FlutterResult?
     private var cfPaymentGatewayService: CFPaymentGatewayService!
+    private let versionNumber = "2.2.9"
     
     public static func register(with registrar: FlutterPluginRegistrar) {
         let channel = FlutterMethodChannel(name: "flutter_cashfree_pg_sdk", binaryMessenger: registrar.messenger())
@@ -63,7 +64,7 @@ public class SwiftFlutterCashfreePgSdkPlugin: NSObject, FlutterPlugin, CFRespons
                     .setNetbanking(cfnetbanking)
                     .build()
                 let systemVersion = UIDevice.current.systemVersion
-                netbankingPayment.setPlatform("iflt-e-2.2.3-3.13.3-m-s-x-i-\(systemVersion.prefix(4))")
+                netbankingPayment.setPlatform("iflt-e-\(versionNumber)-3.13.3-m-s-x-i-\(systemVersion.prefix(4))")
                 if let vc = UIApplication.shared.delegate?.window??.rootViewController {
                     try self.cfPaymentGatewayService.doPayment(netbankingPayment, viewController: vc)
                 } else {
@@ -84,7 +85,7 @@ public class SwiftFlutterCashfreePgSdkPlugin: NSObject, FlutterPlugin, CFRespons
                     .setUPI(cfupi)
                     .build()
                 let systemVersion = UIDevice.current.systemVersion
-                upiPayment.setPlatform("iflt-e-2.2.3-3.13.3-m-s-x-i-\(systemVersion.prefix(4))")
+                upiPayment.setPlatform("iflt-e-\(versionNumber)-3.13.3-m-s-x-i-\(systemVersion.prefix(4))")
                 if let vc = UIApplication.shared.delegate?.window??.rootViewController {
                     try self.cfPaymentGatewayService.doPayment(upiPayment, viewController: vc)
                 } else {
@@ -104,7 +105,7 @@ public class SwiftFlutterCashfreePgSdkPlugin: NSObject, FlutterPlugin, CFRespons
                         .setComponent(paymentComponent)
                         .build()
                     let systemVersion = UIDevice.current.systemVersion
-                    dropCheckoutPayment.setPlatform("iflt-i-2.2.3-3.13.3-m-s-x-i-\(systemVersion.prefix(4))")
+                    dropCheckoutPayment.setPlatform("iflt-i-\(versionNumber)-3.13.3-m-s-x-i-\(systemVersion.prefix(4))")
                     if let vc = UIApplication.shared.delegate?.window??.rootViewController {
                         try self.cfPaymentGatewayService.doPayment(dropCheckoutPayment, viewController: vc)
                     } else {
@@ -145,7 +146,7 @@ public class SwiftFlutterCashfreePgSdkPlugin: NSObject, FlutterPlugin, CFRespons
                     .saveInstrument(savePaymentMethod)
                     .build()
                 let systemVersion = UIDevice.current.systemVersion
-                cardPayment.setPlatform("iflt-e-2.2.3-3.13.3-m-s-x-i-\(systemVersion.prefix(4))")
+                cardPayment.setPlatform("iflt-e-\(versionNumber)-3.13.3-m-s-x-i-\(systemVersion.prefix(4))")
                 if let vc = UIApplication.shared.delegate?.window??.rootViewController {
                     try self.cfPaymentGatewayService.doPayment(cardPayment, viewController: vc)
                 } else {
@@ -178,7 +179,7 @@ public class SwiftFlutterCashfreePgSdkPlugin: NSObject, FlutterPlugin, CFRespons
                                             .build()
                 }
                 let systemVersion = UIDevice.current.systemVersion
-                dropCheckoutPayment.setPlatform("iflt-d-2.2.3-3.13.3-m-s-x-i-\(systemVersion.prefix(4))")
+                dropCheckoutPayment.setPlatform("iflt-d-\(versionNumber)-3.13.3-m-s-x-i-\(systemVersion.prefix(4))")
                 if let vc = UIApplication.shared.delegate?.window??.rootViewController {
                     try self.cfPaymentGatewayService.doPayment(dropCheckoutPayment, viewController: vc)
                 } else {
@@ -196,9 +197,27 @@ public class SwiftFlutterCashfreePgSdkPlugin: NSObject, FlutterPlugin, CFRespons
                                 .setSession(finalSession)
                                 .build()
                 let systemVersion = UIDevice.current.systemVersion
-                webCheckoutPayment.setPlatform("iflt-c-2.2.3-3.13.3-m-s-x-i-\(systemVersion.prefix(4))")
+                webCheckoutPayment.setPlatform("iflt-c-\(versionNumber)-3.13.3-m-s-x-i-\(systemVersion.prefix(4))")
                 if let vc = UIApplication.shared.delegate?.window??.rootViewController {
                     try self.cfPaymentGatewayService.doPayment(webCheckoutPayment, viewController: vc)
+                } else {
+                    self.sendException(message: "unable to get an instance of rootViewController")
+                }
+            } catch let e {
+                let err = e as! CashfreeError
+                self.sendException(message: err.localizedDescription)
+            }
+        } else if method == "doSubscriptionPayment" {
+            let session = args["session"] as? Dictionary<String, String> ?? [:]
+            do {
+                let finalSession = try self.createSubscriptionSession(session: session)
+                let subscriptionWebCheckoutPayment = try CFSubscriptionPayment.CFSubscriptionPaymentBuilder()
+                    .setSession(finalSession)
+                    .build()
+                let systemVersion = UIDevice.current.systemVersion
+                subscriptionWebCheckoutPayment.setPlatform("iflt-sbc-\(versionNumber)-3.13.3-m-s-x-i-\(systemVersion.prefix(4))")
+                if let vc = UIApplication.shared.delegate?.window??.rootViewController {
+                    try self.cfPaymentGatewayService.startSubscription(subscriptionWebCheckoutPayment, viewController: vc)
                 } else {
                     self.sendException(message: "unable to get an instance of rootViewController")
                 }
@@ -224,6 +243,27 @@ public class SwiftFlutterCashfreePgSdkPlugin: NSObject, FlutterPlugin, CFRespons
                 .build()
             
             return cfSession
+        } catch let e {
+            let err = e as! CashfreeError
+            throw err
+        }
+    }
+    
+    private func createSubscriptionSession(session: Dictionary<String, String>) throws -> CFSubscriptionSession {
+        do {
+            var environment = CFENVIRONMENT.PRODUCTION
+            if let env = session["environment"] {
+                if env == "SANDBOX" {
+                    environment = .SANDBOX
+                }
+            }
+            let cfSubscriptionSession = try CFSubscriptionSession.CFSubscriptionSessionBuilder()
+                .setEnvironment(environment)
+                .setSubscriptionId(session["subscription_id"] ?? "")
+                .setSubscriptionSessionId(session["subscription_session_id"] ?? "")
+                .build()
+            
+            return cfSubscriptionSession
         } catch let e {
             let err = e as! CashfreeError
             throw err

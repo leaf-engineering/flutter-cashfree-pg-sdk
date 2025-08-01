@@ -1,4 +1,3 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-  package="com.cashfree.flutter_cashfree_pg_sdk">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <meta-data android:name="flutterEmbedding" android:value="2"/>
 </manifest>
